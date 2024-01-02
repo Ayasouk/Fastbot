@@ -1,0 +1,2 @@
+# Fastbot
+Telegram Sol Bot
