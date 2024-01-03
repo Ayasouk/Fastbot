@@ -4,19 +4,48 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from os import environ as env
 from dotenv import load_dotenv
+#from pyserum import market
+import solana
+from solana.rpc.api import Client
+
 load_dotenv()
 import datetime
 
 #TODO Use Env Variable for Username and MDP
 uri = "mongodb+srv://"+env['MONGO_USERNAME']+":"+env['MONGO_PWD']+"@cluster0.b5ojrgn.mongodb.net/?retryWrites=true&w=majority"
+rpc_url = "https://api.mainnet-beta.solana.com"
 
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
+solana_client = Client(rpc_url)
 
 telegram_api_key = env['TELEGRAM_API_KEY']
 
 current_add = ""
 bot = telebot.TeleBot(telegram_api_key)
+
+# Get token price 
+def get_token_price(market_address, token_address):
+    # Fetch the order book for the market
+    orderbook_data = solana_client.get_orderbook(market_address)
+
+    if not orderbook_data:
+        return None
+
+    bids, asks = orderbook_data['bids'], orderbook_data['asks']
+
+    # Find the price for the token you're interested in
+    for bid in bids:
+        if bid[0] == token_address:
+            price = bid[1]
+            return price
+
+    for ask in asks:
+        if ask[0] == token_address:
+            price = ask[1]
+            return price
+
+    return None
 
 # Handle '/start' and '/help'
 @bot.message_handler(commands=['help', 'start'])
@@ -49,12 +78,13 @@ def answer(callback):
 #def echo_message(message):
 #    bot.reply_to(message, message.text)
 
+# Getting the conversation id
 @bot.message_handler(commands=['cid'])
 def handle_text(message):
     cid = message.chat.id
     bot.send_message(cid, 'Message ID is : '+str(cid))
 
-
+# Set an address to track
 @bot.message_handler(commands=['set'])
 def handle_text(message):
     cid = message.chat.id
@@ -62,7 +92,7 @@ def handle_text(message):
     #TODO: Check if it already exists an entry or not
     msgPrice = bot.send_message(cid, 'Set your address:')
     bot.register_next_step_handler(msgPrice , step_Set_Address)
-
+# Getting the address
 def step_Set_Address(message):
     cid = message.chat.id
     userAddress= message.text
@@ -77,7 +107,7 @@ def step_Set_Address(message):
     except Exception as e:
         print(e)
     
-
+# Showing the address set
 @bot.message_handler(commands=['address'])
 def handle_text(message):
     cid = message.chat.id
@@ -90,6 +120,7 @@ def handle_text(message):
     except Exception as e:
         print(e)
 
+# Getting user info
 @bot.message_handler(commands=['get'])
 def handle_text(message):
     cid = message.chat.id
@@ -102,6 +133,23 @@ def handle_text(message):
     except Exception as e:
         print(e)
 
+@bot.message_handler(commands=['tokenprice'])
+def handle_token_price(message):
+    cid = message.chat.id
+    try:
+        token_address = message.text.split(' ')[1]
+
+        market_address = "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8"
+
+        token_price = get_token_price(market_address, token_address)
+
+        if token_price is not None:
+            bot.send_message(cid, f'The price of {token_address} is {token_price} USD')
+        else:
+            bot.send_message(cid, "The price isn't found")
+    except Exception as e:
+        print(e)
+        bot.send_message(cid, 'Error fetching token price. Please try again.')
 """
 @bot.message_handler(commands=["quiz"])
 def question(message):
