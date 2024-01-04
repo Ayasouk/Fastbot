@@ -4,6 +4,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from os import environ as env
 from dotenv import load_dotenv
+import asyncio
 #from pyserum import market
 import solana
 from solana.rpc.api import Client
@@ -150,6 +151,24 @@ def handle_token_price(message):
     except Exception as e:
         print(e)
         bot.send_message(cid, 'Error fetching token price. Please try again.')
+
+
+async def task2(cid):
+    i = 0
+    while i < 10:
+        try:
+            bot.send_message(cid, f'Message n°{cid} - {i}')
+
+            await asyncio.sleep(10)
+            i+=1
+        except Exception as e:
+            print(f'Error in task2: {e}')
+
+@bot.message_handler(commands=['track'])
+def handle_track(message):
+    cid = message.chat.id
+    asyncio.run(task2(cid))
+
 """
 @bot.message_handler(commands=["quiz"])
 def question(message):
