@@ -8,9 +8,13 @@ import asyncio
 #from pyserum import market
 import solana
 from solana.rpc.api import Client
-
+from solders.pubkey import Pubkey
+from moralis import sol_api
 load_dotenv()
 import datetime
+
+
+api_key = env['MORALIS_KEY_API']
 
 #TODO Use Env Variable for Username and MDP
 uri = "mongodb+srv://"+env['MONGO_USERNAME']+":"+env['MONGO_PWD']+"@cluster0.b5ojrgn.mongodb.net/?retryWrites=true&w=majority"
@@ -80,10 +84,10 @@ def answer(callback):
 #    bot.reply_to(message, message.text)
 
 # Getting the conversation id
-@bot.message_handler(commands=['cid'])
-def handle_text(message):
-    cid = message.chat.id
-    bot.send_message(cid, 'Message ID is : '+str(cid))
+#@bot.message_handler(commands=['cid'])
+#def handle_text(message):
+#    cid = message.chat.id
+#    bot.send_message(cid, 'Message ID is : '+str(cid))
 
 # Set an address to track
 @bot.message_handler(commands=['set'])
@@ -120,6 +124,24 @@ def handle_text(message):
         bot.send_message(cid, 'Your address is : '+str(user["address"]))
     except Exception as e:
         print(e)
+
+# Get balance
+@bot.message_handler(commands=['balance'])
+def handle_text(message):
+    cid = message.chat.id
+    address = message.text.split(' ')[1]
+    params = {
+    "network": "mainnet",
+    "address": address
+    }
+    result = sol_api.account.balance(
+        api_key=api_key,
+        params=params,
+    )
+
+    bot.send_message(cid, f'the balance of {address} is {result["solana"]} sol')
+
+
 
 # Getting user info
 @bot.message_handler(commands=['get'])
@@ -168,6 +190,42 @@ async def task2(cid):
 def handle_track(message):
     cid = message.chat.id
     asyncio.run(task2(cid))
+
+
+@bot.message_handler(commands=['listtokens'])
+def list_tokens(message):
+    cid = message.chat.id
+    user_message = message.text.split()
+    
+    if len(user_message) != 2:
+        bot.send_message(cid, "Please provide a Solana address with the command.")
+        return
+    print('user acc : '+user_message[1])
+    solana_address = Pubkey.from_string(user_message[1])
+    
+    try:
+        # Fetch the token balances for the given Solana address
+        token_balances = solana_client.get_token_account_balance(solana_address)
+        
+        if not token_balances:
+            bot.send_message(cid, "No token balances found for the provided Solana address.")
+            return
+
+        response = "Token Balances:\n"
+        
+        for balance in token_balances:
+            token_address = balance['account']['data']['parsed']['info']['mint']
+            token_balance = balance['account']['data']['parsed']['info']['tokenAmount']['amount']
+            
+            # Fetch the token symbol or name using the token address
+            token_info = solana_client.get_token_info(token_address)
+            token_symbol = token_info['symbol']
+            
+            response += f"{token_symbol}: {token_balance}\n"
+
+        bot.send_message(cid, response)
+    except Exception as e:
+        bot.send_message(cid, f"Error fetching token balances: {e}")
 
 """
 @bot.message_handler(commands=["quiz"])
