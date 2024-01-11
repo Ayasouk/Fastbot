@@ -19,9 +19,14 @@ addEventListener('fetch', event => {
 
 async function handleRequest(request) {
   if (request.method === 'POST') {
-    const requestBody = await request.json();
-    console.log('Received POST request with body:', requestBody);
-
+    try {
+      const requestBody = await request.json();
+      console.log('Received POST request with body:', requestBody);
+      // ... rest of the code
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+      return new Response('Bad request body.', {status: 400});
+    }
 
     //THIS IS FOR NFT UPDATES (comment this section out if you are doing something else)
     // Extract transaction description, timestamp, signature, and mint address
@@ -54,8 +59,6 @@ async function handleRequest(request) {
       `Timestamp:\n${Transfertimestamp}\n`+
       `Object body:\n${objectRequest}`;
       await sendToTelegramTransfer(messageToSendTransfer); // Send to Telegram
-
-
 
     return new Response('Logged POST request body.', {status: 200});
   } else {
