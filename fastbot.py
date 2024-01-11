@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import asyncio
 #from pyserum import market
 import solana
-from solana.rpc.api import Client
+from solana.rpc.api import Client, Pubkey
 from solders.pubkey import Pubkey
 from moralis import sol_api
 load_dotenv()
@@ -18,7 +18,7 @@ api_key = env['MORALIS_KEY_API']
 
 #TODO Use Env Variable for Username and MDP
 uri = "mongodb+srv://"+env['MONGO_USERNAME']+":"+env['MONGO_PWD']+"@cluster0.b5ojrgn.mongodb.net/?retryWrites=true&w=majority"
-rpc_url = "https://api.mainnet-beta.solana.com"
+rpc_url = env['SOLANA_RPC_URL']
 
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
@@ -28,6 +28,40 @@ telegram_api_key = env['TELEGRAM_API_KEY']
 
 current_add = ""
 bot = telebot.TeleBot(telegram_api_key)
+
+# Get last transactions of a given wallet
+@bot.message_handler(commands=['lasttransactions'])
+def get_last_transactions(message):
+    cid = message.chat.id
+    try:
+        # Get the wallet address from the message text
+        wallet_address = message.text.split()[1]
+
+        # Retrieve the last 5 transactions for the wallet
+        transactions = solana_client.get_signatures_for_address(
+                        Pubkey.from_string(wallet_address),
+                        limit = 5 # Specify how much last transactions to fetch
+                        )
+        #transactions = solana_client.get_account_transactions(wallet_address, limit=5)
+
+        # Format and send the transactions as a reply
+        #bot.send_message(cid, "Transactions retrieved : "+str(transactions.value[1].signature))
+        
+        if transactions:
+            response = "Last 5 transactions for wallet address:\n"
+            for tx in transactions.value:
+                response += f"Transaction ID: {tx.signature} \n"
+                response += f"Block Number: {tx.slot} \n"
+                response += f"Timestamp: {tx.block_time} \n"
+            response += "\n"
+        else:
+            response = "No transactions found for the wallet address."
+
+        bot.reply_to(message, response)
+        
+    except Exception as e:
+        bot.reply_to(message, "Error fetching transactions: " + str(e))
+
 
 # Get token price 
 def get_token_price(market_address, token_address):
