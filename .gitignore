@@ -127,6 +127,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+cloud-worker/.env
+cloud-worker/shyft/.env
 
 # Spyder project settings
 .spyderproject

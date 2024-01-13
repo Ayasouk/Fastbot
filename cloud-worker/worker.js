@@ -22,45 +22,28 @@ async function handleRequest(request) {
     try {
       const requestBody = await request.json();
       console.log('Received POST request with body:', requestBody);
-      // ... rest of the code
+      
+    //THIS IS FOR TRANSFER UPDATES (comment this section out if you are doing something else)
+    // Extract transaction description, timestamp, signature
+    const Transferdescription = requestBody[0].description;
+    const Transfertimestamp = new Date(requestBody[0].timestamp * 1000).toLocaleString(); // Convert Unix timestamp to readable date-time
+    const Transfersignature = `https://xray.helius.xyz/tx/${requestBody[0].signature}`
+    const objectRequest = JSON.stringify(requestBody[0]);
+    // Construct the message
+    const messageToSendTransfer = 
+    `----NEW UPDATE---\n`+
+    `Description:\n${Transferdescription}\n` +
+    `Signature:\n${Transfersignature}\n` +
+    `Timestamp:\n${Transfertimestamp}\n`+
+    `Object body:\n${objectRequest}`;
+    await sendToTelegramTransfer(messageToSendTransfer); // Send to Telegram
+
+  return new Response('Logged POST request body.', {status: 200});
     } catch (error) {
       console.error('Error parsing JSON:', error);
       return new Response('Bad request body.', {status: 400});
     }
 
-    //THIS IS FOR NFT UPDATES (comment this section out if you are doing something else)
-    // Extract transaction description, timestamp, signature, and mint address
-      // const NFTdescription = requestBody[0].description;
-      // const NFTtimestamp = new Date(requestBody[0].timestamp * 1000).toLocaleString(); // Convert Unix timestamp to readable date-time
-      // const NFTsignature = `https://solscan.io/tx/${requestBody[0].signature}`
-      // const NFTmintAddress = requestBody[0].events.nft.nfts[0].mint;
-      // const NFTimageUrl = await getAssetImageUrl(NFTmintAddress);// Get NFT image URL
-      // // Construct the message
-      // const messageToSendNFT = 
-      // `----NEW UPDATE---\n`+
-      // `Description:\n${NFTdescription}\n` +
-      // `Mint Address:\n${NFTmintAddress}\n` +
-      // `Signature:\n${NFTsignature}\n` +
-      // `Timestamp:\n${NFTtimestamp}`;
-      // await sendToTelegramNFT(messageToSendNFT, NFTimageUrl); // Send to Telegram
-
-
-    //THIS IS FOR TRANSFER UPDATES (comment this section out if you are doing something else)
-    // Extract transaction description, timestamp, signature
-      const Transferdescription = requestBody[0].description;
-      const Transfertimestamp = new Date(requestBody[0].timestamp * 1000).toLocaleString(); // Convert Unix timestamp to readable date-time
-      const Transfersignature = `https://xray.helius.xyz/tx/${requestBody[0].signature}`
-      const objectRequest = JSON.stringify(requestBody[0]);
-      // Construct the message
-      const messageToSendTransfer = 
-      `----NEW UPDATE---\n`+
-      `Description:\n${Transferdescription}\n` +
-      `Signature:\n${Transfersignature}\n` +
-      `Timestamp:\n${Transfertimestamp}\n`+
-      `Object body:\n${objectRequest}`;
-      await sendToTelegramTransfer(messageToSendTransfer); // Send to Telegram
-
-    return new Response('Logged POST request body.', {status: 200});
   } else {
     return new Response('Method not allowed.', {status: 405});
   }
