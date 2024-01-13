@@ -1,0 +1,46 @@
+{
+    "timestamp": "2023-10-27T05:29:00.000Z",
+    "fee": 0.000005,
+    "fee_payer": "4HHjBCKQrmpxu7qryDZtRGNJMQpaqPrzdcwxjKpr3pWf",
+    "signers": [
+      "4HHjBCKQrmpxu7qryDZtRGNJMQpaqPrzdcwxjKpr3pWf"
+    ],
+    "signatures": [
+      "3nkw8uD2ixKzLkqFYqQpcrTfMSBu6vAq9BWpY6pSFLNJmBfwzWxoFx8A4FWxa2xPTySTpTJd39dUpbobkamswpjR"
+    ],
+    "protocol": {
+      "address": "JCFRaPv7852ESRwJJGRy2mysUMydXZgVVhrMLmExvmVp",
+      "name": "FOXY_CITRUS"
+    },
+    "type": "FORECLOSE_LOAN",
+    "status": "Success",
+    "actions": [{
+        "type": "SWAP",
+        "info": {
+            "swapper": "string",
+            "tokens_swapped": {
+                "in": {
+                "token_address": "string",
+                "name": "string",
+                "symbol": "string",
+                "image_uri": "string",
+                "amount": "number"
+                },
+                "out": {
+                "token_address": "string",
+                "name": "string",
+                "symbol": "string",
+                "image_uri": "string",
+                "amount": "number"
+                }
+            },
+            "swaps": [
+                {
+                "liquidity_pool_address": "string",
+                "name": "string",
+                "source": "string"
+                }
+            ]
+        }   
+  }]
+}
