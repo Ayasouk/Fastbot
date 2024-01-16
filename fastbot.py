@@ -10,6 +10,9 @@ import solana
 from solana.rpc.api import Client, Pubkey
 from solders.pubkey import Pubkey
 from moralis import sol_api
+from cryptography.fernet import Fernet
+from pymongo import MongoClient
+import os
 load_dotenv()
 import datetime
 
@@ -22,12 +25,54 @@ rpc_url = env['SOLANA_RPC_URL']
 
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
+db = client.fastbot
+users_collection = db.users
+
 solana_client = Client(rpc_url)
 
 telegram_api_key = env['TELEGRAM_API_KEY']
 
+# Encryption key (should be stored securely, not like this)
+encryption_key = Fernet.generate_key()
+cipher_suite = Fernet(encryption_key)
+
+
 current_add = ""
 bot = telebot.TeleBot(telegram_api_key)
+
+def encrypt_data(data):
+    return cipher_suite.encrypt(data.encode())
+
+def decrypt(encrypted_text, encryption_key):
+    """ Decrypt the text using Fernet symmetric encryption """
+    cipher_suite = Fernet(encryption_key)
+    try:
+        decrypted_text = cipher_suite.decrypt(encrypted_text.encode()).decode()
+        return decrypted_text
+    except Exception as e:
+        print(f"An error occurred during decryption: {e}")
+        return None
+
+def update_user_private_key(chat_id, encrypted_key):
+    users_collection.update_one({"client_id": chat_id}, {"$set": {"pkey": encrypted_key}}, upsert=True)
+
+
+# Set p key
+@bot.message_handler(commands=['setSigner'])
+def set_signer(message):
+    cid = message.chat.id
+    try:
+        # Get the wallet address from the message text
+        signer_key = message.text.split()[1]
+        # Encrypt the p key
+        encrypted_key = encrypt_data(signer_key)
+        # Add the p key into the database
+        update_user_private_key(cid, encrypted_key)
+        bot.send_message(cid, "Your wallet as been securely set")
+        
+    except Exception as e:
+        bot.reply_to(message, "Error fetching transactions: " + str(e))
+
 
 # Get last transactions of a given wallet
 @bot.message_handler(commands=['lasttransactions'])
