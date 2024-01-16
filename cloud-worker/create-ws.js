@@ -4,7 +4,8 @@ const WebSocket = require('ws');
 let ws;  // Variable pour conserver la référence WebSocket
 
 function connectWebSocket() {
-    ws = new WebSocket(`wss://atlas-mainnet.helius-rpc.com?api-key=$0e4e9cc8-f82d-43a8-b5f0-f5938c99d15b`);
+    const apiKey = process.env.API_KEY;
+    ws = new WebSocket(`wss://atlas-mainnet.helius-rpc.com?api-key=${apiKey}`);
 
     ws.on('open', function open() {
         console.log('WebSocket is open');
