@@ -33,7 +33,7 @@ solana_client = Client(rpc_url)
 telegram_api_key = env['TELEGRAM_API_KEY']
 
 # Encryption key (should be stored securely, not like this)
-encryption_key = Fernet.generate_key()
+encryption_key = env['ENCRYPTION_KEY']
 cipher_suite = Fernet(encryption_key)
 
 
