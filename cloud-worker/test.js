@@ -10,7 +10,7 @@ const uri = `mongodb+srv://${username}:${password}@cluster0.b5ojrgn.mongodb.net/
 
 const client = new MongoClient(uri);
 
-const database = client.db('fastbot');
+const database = client.db(process.env.DB_NAME);
 const users = database.collection('users');
 
 const clientId = process.env.TEST_CHAT_ID;
