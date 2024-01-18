@@ -332,6 +332,9 @@ def callback_inline(call):
         
 def set_slippage(message):
         try:
+            if not message.text.replace('.', '', 1).isdigit():
++               bot.send_message(message.chat.id, 'Please enter a valid number for percentage')
++               return
             slippage = float(message.text)
             if slippage < 0 or slippage > 100:
                 bot.send_message(message.chat.id, 'Slippage must be between 0 and 100')
@@ -343,6 +346,9 @@ def set_slippage(message):
     
 def set_max_gas(message):
         try:
+            if not message.text.replace('.', '', 1).isdigit():
+                bot.send_message(message.chat.id, 'Please enter a valid number for percentage')
+                return
             max_gas = float(message.text)
             if max_gas < 0:
                 bot.send_message(message.chat.id, 'Max gas must be greater than 0')
@@ -354,6 +360,9 @@ def set_max_gas(message):
     
 def set_percentage(message):
         try:
+            if not message.text.replace('.', '', 1).isdigit():
+                bot.send_message(message.chat.id, 'Please enter a valid number for percentage')
+                return
             percentage = float(message.text)
             if percentage < 0 or percentage > 100:
                 bot.send_message(message.chat.id, 'Percentage must be between 0 and 100')
