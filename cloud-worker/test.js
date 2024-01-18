@@ -13,10 +13,18 @@ const client = new MongoClient(uri);
 const database = client.db('fastbot');
 const users = database.collection('users');
 
-const query = { client_id: process.env.TEST_CHAT_ID };
-let user;
-const f = async ()=>{
-      user = await users.findOne(query);
-      console.log("USER : ", user);
-    };
+const clientId = process.env.TEST_CHAT_ID;
+if (!clientId) {
+  throw new Error('TEST_CHAT_ID environment variable is not set.');
+}
+const query = { client_id: clientId };
+const findUser = async () => {
+  const user = await users.findOne(query);
+  if (!user) {
+    console.error('User not found.');
+    return;
+  }
+  console.log("USER : ", user);
+};
+findUser();
 f();
