@@ -1,7 +1,12 @@
 require('dotenv').config()
 const { MongoClient } = require("mongodb");
 
-uri = "mongodb+srv://"+process.env.MONGO_USERNAME+":"+process.env.MONGO_PWD+"@cluster0.b5ojrgn.mongodb.net/?retryWrites=true&w=majority"
+const username = process.env.MONGO_USERNAME;
+const password = process.env.MONGO_PWD;
+if (!username || !password) {
+  throw new Error('Environment variables for MongoDB credentials are not set.');
+}
+const uri = `mongodb+srv://${username}:${password}@cluster0.b5ojrgn.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri);
 
