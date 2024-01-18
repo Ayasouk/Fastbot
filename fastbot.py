@@ -152,21 +152,6 @@ Hi there, I am FastBot for Solana Trades.
 I am here to echo your kind words back to you. Just say anything nice and I'll say the exact same thing to you!\
 """)
 
-# Handle all other messages with content_type 'text' (content_types defaults to ['text'])
-@bot.callback_query_handler(func=lambda call: True)
-def answer(callback):
-    if callback.message != "answer_same":
-        bot.send_message(callback.message.chat.id, "Think again...")
-    if callback.data == "answer_same":
-        bot.send_message(callback.message.chat.id, "🏆 Congratulations! You are the winner!")
-#def echo_message(message):
-#    bot.reply_to(message, message.text)
-
-# Getting the conversation id
-#@bot.message_handler(commands=['cid'])
-#def handle_text(message):
-#    cid = message.chat.id
-#    bot.send_message(cid, 'Message ID is : '+str(cid))
 
 # Set an address to track
 @bot.message_handler(commands=['set'])
@@ -306,20 +291,79 @@ def list_tokens(message):
     except Exception as e:
         bot.send_message(cid, f"Error fetching token balances: {e}")
 
-"""
-@bot.message_handler(commands=["quiz"])
+
+@bot.message_handler(commands=["menu"])
 def question(message):
-    markup = types.InlineKeyboardMarkup(row_width=2)
+        user = users_collection.find_one({"client_id": message.chat.id})
+        menu_str=f'----------MENU------------\n'
+        menu_str+=f'ADDRESS: { user["address"] if user["address"] else "Not Set"}\n'
+        menu_str+=f'SLIPPAGE: {user["slippage"] if "slippage" in user.keys() else "Not Set"}\n'
+        menu_str+=f'MAX GAS FEE: {user["maxgas"] if "maxgas" in user.keys() else "Not Set"}\n'
+        menu_str+=f'PERCENTAGE BUY: {user["percentage"] if "percentage" in user.keys() else "Not Set"}\n'
+        
+        markup = types.InlineKeyboardMarkup(row_width=2)
 
-    iron = types.InlineKeyboardButton('1 kilo of iron', callback_data='answer_iron')
-    silver = types.InlineKeyboardButton('1 kilo of silver', callback_data='answer_silver')
-    same = types.InlineKeyboardButton('Same weight', callback_data='answer_same')
-    no_answer = types.InlineKeyboardButton('No answer correct', callback_data='answer_no')
+        slippage = types.InlineKeyboardButton('Set Slippage Tolerance', callback_data='answer_slippage')
+        gas = types.InlineKeyboardButton('Set Max Gas Fees', callback_data='answer_gas')
+        buy = types.InlineKeyboardButton('Set Percentage to Buy', callback_data='answer_buy')
 
-    markup.add(iron, silver, same, no_answer)
+        markup.add(slippage, gas, buy)
+ 
+        bot.send_message(message.chat.id, menu_str, reply_markup=markup)
 
-    bot.send_message(message.chat.id, 'What is Lighter?', reply_markup=markup)
-"""
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+        if call.message:
+            if call.data == "answer_slippage":
+                bot.send_message(call.message.chat.id, 'Enter the slippage tolerance you want to set')
+                bot.register_next_step_handler(call.message, set_slippage)
+            elif call.data == "answer_gas":
+                bot.send_message(call.message.chat.id, 'Enter the max gas fees you want to set')
+                bot.register_next_step_handler(call.message, set_max_gas)
+            elif call.data == "answer_buy":
+                bot.send_message(call.message.chat.id, 'Enter the percentage you want to buy')
+                bot.register_next_step_handler(call.message, set_percentage)
+            else:
+                bot.send_message(call.message.chat.id, 'Unknown command')
+            return
+        else:
+            bot.send_message(call.message.chat.id, 'Unknown command')
+            return
+        
+def set_slippage(message):
+        try:
+            slippage = float(message.text)
+            if slippage < 0 or slippage > 100:
+                bot.send_message(message.chat.id, 'Slippage must be between 0 and 100')
+                return
+            users_collection.update_one({"client_id": message.chat.id}, {"$set": {"slippage": slippage}})
+            bot.send_message(message.chat.id, f'Slippage tolerance set to {slippage}')
+        except Exception as e:
+            bot.send_message(message.chat.id, f'Error setting slippage: {e}')
+    
+def set_max_gas(message):
+        try:
+            max_gas = float(message.text)
+            if max_gas < 0:
+                bot.send_message(message.chat.id, 'Max gas must be greater than 0')
+                return
+            users_collection.update_one({"client_id": message.chat.id}, {"$set": {"maxgas": max_gas}})
+            bot.send_message(message.chat.id, f'Max gas fees set to {max_gas}')
+        except Exception as e:
+            bot.send_message(message.chat.id, f'Error setting max gas: {e}')
+    
+def set_percentage(message):
+        try:
+            percentage = float(message.text)
+            if percentage < 0 or percentage > 100:
+                bot.send_message(message.chat.id, 'Percentage must be between 0 and 100')
+                return
+            users_collection.update_one({"client_id": message.chat.id}, {"$set": {"percentage": percentage}})
+            bot.send_message(message.chat.id, f'Percentage to buy set to {percentage}')
+        except Exception as e:
+            bot.send_message(message.chat.id, f'Error setting percentage: {e}')
+    
+
 
 bot.polling()
 
