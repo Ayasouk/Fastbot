@@ -35,7 +35,7 @@ transaction.sign(wallet);
 (async () => {
   try {
     // Send and confirm the transaction
-    const signature = await sendAndConfirmTransaction(connection, transaction);
+    const signature = await sendAndConfirmTransaction(connection, transaction, [wallet]);
 
     console.log(`Transaction confirmed. Signature: ${signature}`);
   } catch (error) {
