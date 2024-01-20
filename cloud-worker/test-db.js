@@ -1,4 +1,5 @@
-require('dotenv').config()
+require('dotenv').config();
+require('fernet');
 const { MongoClient } = require("mongodb");
 
 const username = process.env.MONGO_USERNAME;
@@ -25,6 +26,16 @@ const findUser = async () => {
     return;
   }
   console.log("USER : ", user);
+  var token = new fernet.Token({
+    secret: process.env.ENCRYPTION_KEY,
+    token: user.pkey,
+    ttl: 0
+  })
+  const pkey = token.decode();
+  console.log("PKEY : ", pkey);
+  /*
+  "Message"
+  */
 };
 findUser();
 f();
