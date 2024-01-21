@@ -1,9 +1,10 @@
 require('dotenv').config();
-require('fernet');
+const fernet = require('fernet');
 const { MongoClient } = require("mongodb");
 
 const username = process.env.MONGO_USERNAME;
 const password = process.env.MONGO_PWD;
+const clientId = process.env.TEST_CHAT_ID;
 if (!username || !password) {
   throw new Error('Environment variables for MongoDB credentials are not set.');
 }
@@ -14,11 +15,11 @@ const client = new MongoClient(uri);
 const database = client.db(process.env.DB_NAME);
 const users = database.collection('users');
 
-const clientId = process.env.TEST_CHAT_ID;
+console.log("CLIENT ID : ", clientId);
 if (!clientId) {
   throw new Error('TEST_CHAT_ID environment variable is not set.');
 }
-const query = { client_id: clientId };
+const query = { client_id: parseInt(clientId) };;
 const findUser = async () => {
   const user = await users.findOne(query);
   if (!user) {
@@ -26,8 +27,11 @@ const findUser = async () => {
     return;
   }
   console.log("USER : ", user);
+
+  const secret = new fernet.Secret(process.env.ENCRYPTION_KEY);
+
   var token = new fernet.Token({
-    secret: process.env.ENCRYPTION_KEY,
+    secret: secret,
     token: user.pkey,
     ttl: 0
   })
@@ -38,4 +42,3 @@ const findUser = async () => {
   */
 };
 findUser();
-f();
