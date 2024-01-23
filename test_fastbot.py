@@ -5,10 +5,20 @@ class TestFastbot(unittest.TestCase):
 
     def test_encrypt_data(self):
         # Test that data is correctly encrypted
+        print("TEST ENCRYPT DATA")
+        expectedResult="gAAAAABlsBtGAAECAwQFBgcICQoLDA0ODxpYaYvSK7xuFaRvgTOKGJ-YGLvQCU50eqbe7pBz9uScXxHgEpj0qUErd1i1c-LW7w=="
+        msg = "Message Test"
+        encryptedMsg = encrypt_data(msg)
+        self.assertNotEqual(msg, encryptedMsg)
         pass
 
     def test_decrypt(self):
         # Test that encrypted data is correctly decrypted
+        print("DECRYPT DATA")
+        expectedResult = "Message Test"
+        encryptedMsg="gAAAAABlsBtGAAECAwQFBgcICQoLDA0ODxpYaYvSK7xuFaRvgTOKGJ-YGLvQCU50eqbe7pBz9uScXxHgEpj0qUErd1i1c-LW7w=="
+        msg = decrypt(encryptedMsg)
+        self.assertEqual(expectedResult, msg)
         pass
 
     def test_update_user_private_key(self):
