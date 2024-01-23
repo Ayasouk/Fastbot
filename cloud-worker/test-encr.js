@@ -8,4 +8,4 @@ var token = new fernet.Token({
     time: Date.parse(1),
     iv: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
   })
-  console.log("Message: ", token.encode("Message Test Encryption"));
+  console.log("Message: ", token.encode("Message Test"));

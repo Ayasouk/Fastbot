@@ -19,7 +19,7 @@ const database = client.db(process.env.DB_NAME);
 const users = database.collection('users');
 
 // Connect to web3
-const connection = new web3.Connection(HELIUS_RPC_URL, 'confirmed');
+const connection = new web3.Connection("https://api.mainnet-beta.solana.com", 'confirmed');
 
 console.log("CLIENT ID : ", clientId);
 if (!clientId) {
@@ -41,19 +41,21 @@ const executeTransfer = async () => {
     token: user.pkey,
     ttl: 0
   })
-  let pkey = token.decode();
-  pkey = Uint8Array(bs58.decode(pkey));
+  let pkey = await token.decode();
+  pkey = await new Uint8Array(bs58.decode(pkey));
 
-  const account = web3.Keypair.fromSecretKey(pkey);
-  const account2 = web3.Keypair.fromSecretKey(pkey);
+  const account = await web3.Keypair.fromSecretKey(pkey);
+  const account2pub = await new web3.PublicKey("PUBLIC WALLET KEY");
+  //const account2 = web3.Keypair.fromSecretKey(pkey);
   console.log("PKEY : ", pkey);
-
+  console.log("ACCOUNT : ", account.publicKey.toString());
+  console.log("ACCOUNT2 : ", account2pub.toString());
   // Test Transfer between two accounts
   (async () => {
     const transaction = new web3.Transaction().add(
      web3.SystemProgram.transfer({
        fromPubKey: account.publicKey,
-       toPubKey: account2.publicKey,
+       toPubKey: account2pub,
        lamports: web3.LAMPORTS_PER_SOL * 0.001,
      }),
     );
