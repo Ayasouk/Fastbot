@@ -15,6 +15,7 @@ from pymongo import MongoClient
 import os
 load_dotenv()
 import datetime
+from bot.commands import track_wallet
 
 
 api_key = env['MORALIS_KEY_API']
@@ -252,8 +253,7 @@ async def task2(cid):
 
 @bot.message_handler(commands=['track'])
 def handle_track(message):
-    cid = message.chat.id
-    asyncio.run(task2(cid))
+    track_wallet(bot, message)
 
 
 @bot.message_handler(commands=['listtokens'])

@@ -1,5 +1,5 @@
 import unittest
-from fastbot import encrypt_data, decrypt, update_user_private_key, set_signer, get_last_transactions, get_token_price
+from legacy.fastbot import encrypt_data, decrypt, update_user_private_key, set_signer, get_last_transactions, get_token_price
 
 class TestFastbot(unittest.TestCase):
 
